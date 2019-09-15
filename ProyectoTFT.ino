@@ -22,8 +22,6 @@ File dafile;
 const int chipSelect = 10;
 
 
-
-
 // When using the BREAKOUT BOARD only, use these 8 data lines to the LCD:
 // For the Arduino Uno, Duemilanove, Diecimila, etc.:
 //   D0 connects to digital pin 8  (Notice these are
@@ -140,16 +138,17 @@ void setup(void) {
 	//---------------Iniciando la tarjeta sd-------------
 	//---------------------------------------------------
 
-	Serial.print("Inicializando sd card... ");
+	Serial.println("Inicializando sd card... ");
+
 	pinMode(chipSelect, OUTPUT);
-	delay(2000);
+
 	if (!SD.begin(chipSelect)) {
-		Serial.print("Fallo la lectura de tarjeta bro ");
+		Serial.println("Fallo la lectura de tarjeta bro ");
 		delay(2000);
 		return;
 	}
 
-	Serial.print("SD inicializada bro maquina si sale con 100 :v");
+	Serial.println("SD inicializada bro maquina si sale con 100 :v");
 
 	reiniciarArchivo();
 	//----------------------------------------------------
@@ -308,11 +307,11 @@ void canvas() {
 
 	if (p.z > MINPRESSURE && p.z < MAXPRESSURE) {
 
-		
+
 		//Serial.print("X = "); Serial.print(p.x);
 		//Serial.print("\tY = "); Serial.print(p.y);
 		//Serial.print("\tPressure = "); Serial.println(p.z);
-		
+
 
 		if (p.y < (TS_MINY - 5)) {
 			limpiarPantalla();
@@ -322,11 +321,11 @@ void canvas() {
 		p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
 		p.y = map(p.y, TS_MINY, TS_MAXY, tft.height(), 0);
 
-		
+
 		//Serial.print("("); Serial.print(p.x);
 		//Serial.print(", "); Serial.print(p.y);
 		//Serial.println(")");
-		
+
 
 		if (p.y < BOXSIZE * 2) {
 			oldcolor = currentcolor;
@@ -381,17 +380,20 @@ void canvas() {
 
 			currentposx = p.x;
 			currentposy = p.y;
-			oldposx = currentposx;
-			oldposy = currentposy;
+
 
 			tft.fillCircle(p.x, p.y, PENRADIUS, currentcolor);
 
-			//escrib
-			if (((oldposx!=currentposx)&&(oldposy!=currentcolor))) {
+
+			if (((oldposx != currentposx) && (oldposy != currentcolor))) {
 				escribirPunto(p.x, p.y);
 			}
 
-			
+
+			oldposx = currentposx;
+			oldposy = currentposy;
+
+
 		}
 
 
@@ -422,8 +424,8 @@ void escribirPunto(int16_t x, int16_t y) {
 
 
 		if (currentcolor == RED) { dafile.print("R"); Serial.println("R"); }    //Rojo
-		if (currentcolor == YELLOW) { dafile.print("N"); Serial.println("N"); } //Negro
-		if (currentcolor == GREEN) { dafile.print("A"); Serial.println("A"); } //Azul
+		if (currentcolor == BLACK) { dafile.print("N"); Serial.println("N"); } //Negro
+		if (currentcolor == BLUE) { dafile.print("A"); Serial.println("A"); } //Azul
 
 		dafile.println();
 
@@ -443,6 +445,7 @@ void escribirPunto(int16_t x, int16_t y) {
 void leerPuntos() {
 
 
+
 	dafile = SD.open("prueba.txt", FILE_WRITE);
 
 	if (dafile) {
@@ -452,8 +455,59 @@ void leerPuntos() {
 		//*******************************************************
 		Serial.println("prueba.txt->");
 
+		char aux='0';
+		String cadena = "";
+		int cont = 0;
+
+
+		int posx;
+		int posy;
+		String  color = "";
+
 		while (dafile.available()) {
-			Serial.write(dafile.read());
+
+			aux = dafile.read();
+			Serial.print(aux);
+
+			if (aux == ',') {
+
+				if (cont == 0) {
+					posx = cadena.toInt();
+					cadena = "";
+					cont++;
+				}
+				else
+				{
+					posy = cadena.toInt();
+					cadena = "";
+					cont = 0;
+				}
+
+			}
+			else if (aux == '\n') {
+
+				color = cadena;
+
+				if (color.equalsIgnoreCase("R")) {
+					tft.fillCircle(posx,posy, PENRADIUS, RED);
+				}
+
+				if (color.equalsIgnoreCase("N")) {
+					tft.fillCircle(posx, posy, PENRADIUS, BLACK);
+				}
+
+				if (color.equalsIgnoreCase("A")) {
+					tft.fillCircle(posx, posy, PENRADIUS, BLUE);
+				}
+
+
+			}
+			else {
+				cadena += String(aux);
+			}
+
+
+
 		}
 
 		dafile.close();
@@ -464,8 +518,8 @@ void leerPuntos() {
 		//*********************************************************
 
 
-		eliminarFile();
-		crearFile();
+		//eliminarFile();
+		//crearFile();
 	}
 	else {
 		// if the file didn't open, print an error:
