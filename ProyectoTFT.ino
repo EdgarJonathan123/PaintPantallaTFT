@@ -17,8 +17,6 @@ File dafile;
 File myFile;
 char archivo[11] = { 'p', 'r', 'u','e', 'b', 'a','.','t','x','t' };
 
-
-
 // change this to match your SD shield or module;
 //     Arduino Ethernet shield: pin 4
 //     Adafruit SD shields and modules: pin 10
@@ -147,7 +145,10 @@ void setup(void) {
 
 	Serial.println("Inicializando sd card... ");
 
-	pinMode(chipSelect, OUTPUT);
+
+	//pinMode(chipSelect, OUTPUT);
+	//DDRB = B10010000;
+	DDRB = B00010000;
 
 	if (!SD.begin(chipSelect)) {
 		Serial.println("Fallo la lectura de tarjeta bro ");
@@ -196,7 +197,6 @@ void loop()
 
 }
 
-
 void paint() {
 
 	tft.setRotation(0);
@@ -219,7 +219,12 @@ void paint() {
 
 	currentcolor = RED;
 
-	pinMode(13, OUTPUT);
+	//pinMode(13, OUTPUT);
+	//DDRB = B10010000;
+	//DDRB = B10000000;
+
+	//DDRB = B11111111;
+
 }
 
 unsigned long testText() {
@@ -254,22 +259,35 @@ unsigned long testText() {
 	tft.setCursor(BTNX, BTNY + 10);
 	tft.setTextSize(1.5);
 	tft.println(" Presioname");
-	pinMode(13, OUTPUT);
+	//pinMode(13, OUTPUT);
+	//DDRB = B10000000;
+	//DDRB = B10010000;
+	//  DDRB = B11111111;
 
 	return micros() - start;
 }
 
 void leerBtnInicio() {
 
-	digitalWrite(13, HIGH);
+	//digitalWrite(13, HIGH);
+	PORTB = B10000000;
 	TSPoint p = ts.getPoint();
-	digitalWrite(13, LOW);
+	PORTB = B00000000;
+	//digitalWrite(13, LOW);
 
 
 	// if sharing pins, you'll need to fix the directions of the touchscreen pins
 	//pinMode(XP, OUTPUT);
-	pinMode(XM, OUTPUT);
-	pinMode(YP, OUTPUT);
+
+	//--------------------
+	//pinMode(XM, OUTPUT);
+
+	DDRF = B11111111;
+
+	//pinMode(YP, OUTPUT);
+
+	//--------------------
+
 	//pinMode(YM, OUTPUT);
 
 	// we have some minimum pressure we consider 'valid'
@@ -298,14 +316,23 @@ void leerBtnInicio() {
 
 void canvas() {
 
-	digitalWrite(13, HIGH);
+	//digitalWrite(13, HIGH);
+	PORTB = B10000000;
 	TSPoint p = ts.getPoint();
-	digitalWrite(13, LOW);
+	PORTB = B10000000;
+	//digitalWrite(13, LOW);
 
 	// if sharing pins, you'll need to fix the directions of the touchscreen pins
 	//pinMode(XP, OUTPUT);
-	pinMode(XM, OUTPUT);
-	pinMode(YP, OUTPUT);
+
+	//---------------------
+	//pinMode(XM, OUTPUT);
+	//pinMode(YP, OUTPUT);
+	//---------------------
+
+	DDRF = B11111111;
+
+
 	//pinMode(YM, OUTPUT);
 
 	// we have some minimum pressure we consider 'valid'
@@ -408,7 +435,6 @@ void canvas() {
 
 }
 
-
 void escribirPunto(int16_t x, int16_t y) {
 
 	dafile = SD.open(archivo, FILE_WRITE);
@@ -423,16 +449,16 @@ void escribirPunto(int16_t x, int16_t y) {
 		dafile.print(y);
 		dafile.print(",");
 
-		//Serial.print("Escribio: ");
-		//Serial.print(x);
-		//Serial.print(",");
-		//Serial.print(y);
-		//Serial.print(",");
+		Serial.print("Escribio: ");
+		Serial.print(x);
+		Serial.print(",");
+		Serial.print(y);
+		Serial.print(",");
 
 
-		if (currentcolor == RED) { dafile.print("R"); /*Serial.println("R");*/ }    //Rojo
-		if (currentcolor == BLACK) { dafile.print("N"); /*Serial.println("N");*/ } //Negro
-		if (currentcolor == BLUE) { dafile.print("A"); /*Serial.println("A");*/ } //Azul
+		if (currentcolor == RED) { dafile.print("R"); Serial.println("R"); }    //Rojo
+		if (currentcolor == BLACK) { dafile.print("N"); Serial.println("N"); } //Negro
+		if (currentcolor == BLUE) { dafile.print("A"); Serial.println("A"); } //Azul
 
 		dafile.println();
 
@@ -448,7 +474,6 @@ void escribirPunto(int16_t x, int16_t y) {
 
 }
 
-
 void reiniciarArchivo() {
 
 	// Check to see if the file exists: 
@@ -461,14 +486,11 @@ void reiniciarArchivo() {
 
 }
 
-
-
 void eliminarFile() {
 	// delete the file:
 	Serial.println("Removing prueba.txt...");
 	SD.remove(archivo);
 }
-
 
 void crearFile() {
 	// open a new file and immediately close it:
@@ -476,7 +498,6 @@ void crearFile() {
 	dafile = SD.open(archivo, FILE_WRITE);
 	dafile.close();
 }
-
 
 void limpiarPantalla() {
 	Serial.println("erase");
@@ -536,10 +557,8 @@ void leerPuntos() {
 			else {
 				cadena += aux;
 			}
-
 			delay(10);
 		}
-
 		myFile.close();
 
 
