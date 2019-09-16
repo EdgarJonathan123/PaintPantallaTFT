@@ -14,6 +14,9 @@
 #endif
 
 File dafile;
+File myFile;
+
+
 
 // change this to match your SD shield or module;
 //     Arduino Ethernet shield: pin 4
@@ -110,6 +113,9 @@ boolean btnInicio = false;
 boolean PaintDraw = false;
 boolean setPaint = false;
 
+boolean btnImprmir = false;
+boolean lectura = true;
+
 void setup(void) {
 
 	//------------------------------------------------------
@@ -144,7 +150,6 @@ void setup(void) {
 
 	if (!SD.begin(chipSelect)) {
 		Serial.println("Fallo la lectura de tarjeta bro ");
-		delay(2000);
 		return;
 	}
 
@@ -346,10 +351,21 @@ void canvas() {
 			else if (p.x < BOXSIZE * 12) {
 
 				//  currentcolor = CYAN;
-				//  tft.drawRect(BOXSIZE * 9, 0, tft.width() - BOXSIZE * 9, BOXSIZE * 2, AZUL_CADETE);
+				if (btnImprmir) {
 
-				limpiarPantalla();
-				leerPuntos();
+					tft.drawRect(BOXSIZE * 9, 0, tft.width() - BOXSIZE * 9, BOXSIZE * 2, CYAN);
+					btnImprmir = false;
+				}
+				else {
+					tft.drawRect(BOXSIZE * 9, 0, tft.width() - BOXSIZE * 9, BOXSIZE * 2, BLACK);
+					btnImprmir = true;
+					//limpiarPantalla();
+					//leerPuntos
+					prueba();
+				}
+				 
+
+				
 
 			}
 
@@ -455,60 +471,64 @@ void leerPuntos() {
 		//*******************************************************
 		Serial.println("prueba.txt->");
 
-		char aux='0';
-		String cadena = "";
-		int cont = 0;
 
 
-		int posx;
-		int posy;
-		String  color = "";
+		//char aux='0';
+		//String cadena = "";
+		//int cont = 0;
+		//int posx;
+		//int posy;
+		//String  color = "";
 
-		while (dafile.available()) {
+		Serial.println("inicia bucle");
 
-			aux = dafile.read();
-			Serial.print(aux);
+		//while (dafile.available()) {
+		//	Serial.write(dafile.read());
+		//}
 
-			if (aux == ',') {
-
-				if (cont == 0) {
-					posx = cadena.toInt();
-					cadena = "";
-					cont++;
-				}
-				else
-				{
-					posy = cadena.toInt();
-					cadena = "";
-					cont = 0;
-				}
-
-			}
-			else if (aux == '\n') {
-
-				color = cadena;
-
-				if (color.equalsIgnoreCase("R")) {
-					tft.fillCircle(posx,posy, PENRADIUS, RED);
-				}
-
-				if (color.equalsIgnoreCase("N")) {
-					tft.fillCircle(posx, posy, PENRADIUS, BLACK);
-				}
-
-				if (color.equalsIgnoreCase("A")) {
-					tft.fillCircle(posx, posy, PENRADIUS, BLUE);
-				}
-
-
-			}
-			else {
-				cadena += String(aux);
-			}
-
-
-
+		if (dafile.available())
+		{
+			Serial.println("TRUE");
 		}
+		else {
+			Serial.println("FALSO");
+		}
+		Serial.println("termina el bucle");
+
+		//while (dafile.available()) {
+		//	aux = dafile.read();
+		//	Serial.print(aux);
+		//	if (aux == ',') {
+		//		if (cont == 0) {
+		//			posx = cadena.toInt();
+		//			cadena = "";
+		//			cont++;
+		//		}
+		//		else
+		//		{
+		//			posy = cadena.toInt();
+		//			cadena = "";
+		//			cont = 0;
+		//		}
+		//	}
+		//	else if (aux == '\n') {
+		//		color = cadena;
+		//		if (color.equalsIgnoreCase("R")) {
+		//			tft.fillCircle(posx,posy, PENRADIUS, RED);
+		//		}
+		//		if (color.equalsIgnoreCase("N")) {
+		//			tft.fillCircle(posx, posy, PENRADIUS, BLACK);
+		//		}
+		//		if (color.equalsIgnoreCase("A")) {
+		//			tft.fillCircle(posx, posy, PENRADIUS, BLUE);
+		//		}
+		//	}
+		//	else {
+		//		cadena += String(aux);
+		//	}
+		//	Serial.print(aux);
+		//	Serial.print(cont);
+		//}
 
 		dafile.close();
 
@@ -560,4 +580,53 @@ void limpiarPantalla() {
 	Serial.println("erase");
 	// press the bottom of the screen to erase 
 	tft.fillRect(0, BOXSIZE * 2, tft.width(), tft.height() - BOXSIZE * 2, WHITE);
+}
+
+void prueba() {
+
+
+
+	// open the file. note that only one file can be open at a time,
+	// so you have to close this one before opening another.
+	myFile = SD.open("prueba.txt", FILE_WRITE);
+
+	// if the file opened okay, write to it:
+	if (myFile) {
+		Serial.print("Writing to prueba.txt...");
+		myFile.println("testing 1, 2, 3.");
+		// close the file:
+		myFile.close();
+		Serial.println("done.");
+	}
+	else {
+		// if the file didn't open, print an error:
+		Serial.println("error opening test.txt");
+	}
+
+	// re-open the file for reading:
+	myFile = SD.open("prueba.txt");
+	if (myFile) {
+		Serial.println("prueba.txt:");
+
+		// read from the file until there's nothing else in it:
+
+		if (myFile.available())
+		{
+			Serial.println("TRUE");
+		}
+		else {
+			Serial.println("FALSO");
+		}
+
+		while (myFile.available()) {
+			Serial.write(myFile.read());
+		}
+		// close the file:
+		myFile.close();
+	}
+	else {
+		// if the file didn't open, print an error:
+		Serial.println("error opening test.txt");
+	}
+
 }
