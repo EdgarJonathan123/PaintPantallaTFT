@@ -15,6 +15,7 @@
 
 File dafile;
 File myFile;
+char archivo[11] = { 'p', 'r', 'u','e', 'b', 'a','.','t','x','t' };
 
 
 
@@ -326,7 +327,6 @@ void canvas() {
 		p.x = map(p.x, TS_MINX, TS_MAXX, tft.width(), 0);
 		p.y = map(p.y, TS_MINY, TS_MAXY, tft.height(), 0);
 
-
 		//Serial.print("("); Serial.print(p.x);
 		//Serial.print(", "); Serial.print(p.y);
 		//Serial.println(")");
@@ -359,13 +359,11 @@ void canvas() {
 				else {
 					tft.drawRect(BOXSIZE * 9, 0, tft.width() - BOXSIZE * 9, BOXSIZE * 2, BLACK);
 					btnImprmir = true;
-					//limpiarPantalla();
-					//leerPuntos
-					prueba();
+					limpiarPantalla();
+					leerPuntos();
+					eliminarFile();
+					crearFile();
 				}
-				 
-
-				
 
 			}
 
@@ -387,24 +385,17 @@ void canvas() {
 				//}
 			}
 
-
 		}
-
 
 
 		if (((p.y - PENRADIUS) > BOXSIZE * 2) && ((p.y + PENRADIUS) < tft.height())) {
 
 			currentposx = p.x;
 			currentposy = p.y;
-
-
 			tft.fillCircle(p.x, p.y, PENRADIUS, currentcolor);
-
-
 			if (((oldposx != currentposx) && (oldposy != currentcolor))) {
 				escribirPunto(p.x, p.y);
 			}
-
 
 			oldposx = currentposx;
 			oldposy = currentposy;
@@ -420,7 +411,7 @@ void canvas() {
 
 void escribirPunto(int16_t x, int16_t y) {
 
-	dafile = SD.open("prueba.txt", FILE_WRITE);
+	dafile = SD.open(archivo, FILE_WRITE);
 
 
 	if (dafile) {
@@ -432,16 +423,16 @@ void escribirPunto(int16_t x, int16_t y) {
 		dafile.print(y);
 		dafile.print(",");
 
-		Serial.print("Escribio: ");
-		Serial.print(x);
-		Serial.print(",");
-		Serial.print(y);
-		Serial.print(",");
+		//Serial.print("Escribio: ");
+		//Serial.print(x);
+		//Serial.print(",");
+		//Serial.print(y);
+		//Serial.print(",");
 
 
-		if (currentcolor == RED) { dafile.print("R"); Serial.println("R"); }    //Rojo
-		if (currentcolor == BLACK) { dafile.print("N"); Serial.println("N"); } //Negro
-		if (currentcolor == BLUE) { dafile.print("A"); Serial.println("A"); } //Azul
+		if (currentcolor == RED) { dafile.print("R"); /*Serial.println("R");*/ }    //Rojo
+		if (currentcolor == BLACK) { dafile.print("N"); /*Serial.println("N");*/ } //Negro
+		if (currentcolor == BLUE) { dafile.print("A"); /*Serial.println("A");*/ } //Azul
 
 		dafile.println();
 
@@ -458,99 +449,10 @@ void escribirPunto(int16_t x, int16_t y) {
 }
 
 
-void leerPuntos() {
-
-
-
-	dafile = SD.open("prueba.txt", FILE_WRITE);
-
-	if (dafile) {
-
-		//*******************************************************
-		//*************EMPEZAMOS A LEER EL ARCHIVO **************
-		//*******************************************************
-		Serial.println("prueba.txt->");
-
-
-
-		//char aux='0';
-		//String cadena = "";
-		//int cont = 0;
-		//int posx;
-		//int posy;
-		//String  color = "";
-
-		Serial.println("inicia bucle");
-
-		//while (dafile.available()) {
-		//	Serial.write(dafile.read());
-		//}
-
-		if (dafile.available())
-		{
-			Serial.println("TRUE");
-		}
-		else {
-			Serial.println("FALSO");
-		}
-		Serial.println("termina el bucle");
-
-		//while (dafile.available()) {
-		//	aux = dafile.read();
-		//	Serial.print(aux);
-		//	if (aux == ',') {
-		//		if (cont == 0) {
-		//			posx = cadena.toInt();
-		//			cadena = "";
-		//			cont++;
-		//		}
-		//		else
-		//		{
-		//			posy = cadena.toInt();
-		//			cadena = "";
-		//			cont = 0;
-		//		}
-		//	}
-		//	else if (aux == '\n') {
-		//		color = cadena;
-		//		if (color.equalsIgnoreCase("R")) {
-		//			tft.fillCircle(posx,posy, PENRADIUS, RED);
-		//		}
-		//		if (color.equalsIgnoreCase("N")) {
-		//			tft.fillCircle(posx, posy, PENRADIUS, BLACK);
-		//		}
-		//		if (color.equalsIgnoreCase("A")) {
-		//			tft.fillCircle(posx, posy, PENRADIUS, BLUE);
-		//		}
-		//	}
-		//	else {
-		//		cadena += String(aux);
-		//	}
-		//	Serial.print(aux);
-		//	Serial.print(cont);
-		//}
-
-		dafile.close();
-
-
-		//*********************************************************
-		//*************TERMINAMOS A LEER EL ARCHIVO ***************
-		//*********************************************************
-
-
-		//eliminarFile();
-		//crearFile();
-	}
-	else {
-		// if the file didn't open, print an error:
-		Serial.println("error opening prueba.txt");
-	}
-}
-
 void reiniciarArchivo() {
 
 	// Check to see if the file exists: 
-	if (SD.exists("prueba.txt")) {
+	if (SD.exists(archivo)) {
 		eliminarFile();
 	}
 	else {
@@ -564,14 +466,14 @@ void reiniciarArchivo() {
 void eliminarFile() {
 	// delete the file:
 	Serial.println("Removing prueba.txt...");
-	SD.remove("prueba.txt");
+	SD.remove(archivo);
 }
 
 
 void crearFile() {
 	// open a new file and immediately close it:
 	Serial.println("Creating prueba.txt...");
-	dafile = SD.open("prueba.txt", FILE_WRITE);
+	dafile = SD.open(archivo, FILE_WRITE);
 	dafile.close();
 }
 
@@ -582,47 +484,65 @@ void limpiarPantalla() {
 	tft.fillRect(0, BOXSIZE * 2, tft.width(), tft.height() - BOXSIZE * 2, WHITE);
 }
 
-void prueba() {
+void leerPuntos() {
 
-
-
-	// open the file. note that only one file can be open at a time,
-	// so you have to close this one before opening another.
-	myFile = SD.open("prueba.txt", FILE_WRITE);
-
-	// if the file opened okay, write to it:
+	//myFile = SD.open(archivo, FILE_WRITE);
+	myFile = SD.open(archivo);
 	if (myFile) {
-		Serial.print("Writing to prueba.txt...");
-		myFile.println("testing 1, 2, 3.");
-		// close the file:
-		myFile.close();
-		Serial.println("done.");
-	}
-	else {
-		// if the file didn't open, print an error:
-		Serial.println("error opening test.txt");
-	}
 
-	// re-open the file for reading:
-	myFile = SD.open("prueba.txt");
-	if (myFile) {
-		Serial.println("prueba.txt:");
+		//Serial.println("prueba.txt:");
 
-		// read from the file until there's nothing else in it:
-
-		if (myFile.available())
-		{
-			Serial.println("TRUE");
-		}
-		else {
-			Serial.println("FALSO");
-		}
+		char   aux = '0';
+		String cadena = "";
+		int cont = 0;
+		int posx = 0;
+		int posy = 0;
+		String  color = "";
 
 		while (myFile.available()) {
-			Serial.write(myFile.read());
+
+			aux = myFile.read();
+
+			//Serial.println(aux);
+
+			if (aux == 44) {
+				if (cont == 0) {
+					posx = cadena.toInt();
+					cadena = "";
+					cont++;
+
+				}
+				else
+				{
+					posy = cadena.toInt();
+					cadena = "";
+					cont = 0;
+
+				}
+			}
+			//82 = "R" 
+			else if (aux == 82) {
+				tft.fillCircle(posx, posy, PENRADIUS, RED);
+			}
+			//78 ="N" 
+			else if (aux == 78) {
+				tft.fillCircle(posx, posy, PENRADIUS, BLACK);
+			}
+			//65 ="A" 
+			else if (aux == 65) {
+				tft.fillCircle(posx, posy, PENRADIUS, BLUE);
+			}
+			else if (aux == '\n') {}
+			else {
+				cadena += aux;
+			}
+
+			delay(10);
 		}
-		// close the file:
+
 		myFile.close();
+
+
 	}
 	else {
 		// if the file didn't open, print an error:
